@@ -10,6 +10,9 @@
                 {{$article->body}}
             </p>
 
+
+            <a href="/articles/{{ $article->symbol_code }}/edit"> Редактировать </a>
+            <hr>
             <a href="/"> Вернуться к статьям </a>
         </div>
     </div>
