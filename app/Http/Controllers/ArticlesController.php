@@ -2,13 +2,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class ArticlesController extends Controller
 {
     public function index()
     {
-        $articles = Article::latest()->get();
+        $articles = Article::with('tags')->latest()->get();
         return view('welcome', compact('articles'));
     }
 
@@ -20,7 +21,8 @@ class ArticlesController extends Controller
 
     public function create()
     {
-        return view('articles.create');
+        $article = new Article();
+        return view('articles.create', compact('article'));
     }
 
     public function store()
@@ -59,6 +61,19 @@ class ArticlesController extends Controller
 
         $article = Article::where('id', $id)->first();
         $article->update($attributes);
+
+        $articleTags = $article->tags->keyBy('name');
+        $tags = collect(explode(',', request('tags')))->keyBy(function ($item) { return $item; });
+        $syncIDs = $articleTags->intersectByKeys($tags)->pluck('id')->toArray();
+        $tagsToAttach = $tags->diffKeys($articleTags);
+
+        foreach ($tagsToAttach as $tag) {
+            $tag = Tag::firstOrCreate(['name' => $tag]);
+            $syncIDs[] = $tag->id;
+        }
+
+        $article->tags()->sync($syncIDs);
+
         return redirect('/');
     }
 
