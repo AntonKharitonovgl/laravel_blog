@@ -13,7 +13,7 @@
 
     <form method="post" action="/articles">
         @csrf
-        @include('layout.form')
+        @include('layout.form', compact('article'))
         <button type="submit" class="btn btn-primary">Создать статью</button>
     </form>
 @endsection
